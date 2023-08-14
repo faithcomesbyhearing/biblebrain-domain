@@ -1,18 +1,18 @@
-package domain
+package bible
 
 import (
 	"time"
 )
 
 type BibleFileTimestamps struct {
-	id            uint `gorm:"primary_key"`
+	ID            uint `gorm:"primary_key"`
 	BibleFileId   uint
 	VerseStart    int
 	VerseEnd      string
 	VerseSequence uint
 	Timestamp     float64
 	CreatedAt     time.Time
-	UpdateAt      time.Time
+	UpdatedAt     time.Time
 }
 
 func (BibleFileTimestamps) TableName() string {

@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"biblebrain-domain-go/core/domain"
-	"biblebrain-domain-go/core/ports/repository"
+	domain "biblebrain-domain/core/domain/bible"
+	"biblebrain-domain/core/ports/repository"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -34,7 +34,6 @@ func (r BibleFileWithGapsRepository) CreateTempTable() error {
 		JOIN bible_files bf2 ON bf2.hash_id = bf.hash_id 
 		JOIN bible_file_timestamps bft ON bft.bible_file_id = bf2.id
 		WHERE bft.verse_sequence <> 0
-		AND bft.bible_file_id = 495933 -- test line
 		GROUP BY bfc.bible_id, bf2.id, bf2.book_id, bf2.file_name,bf2.chapter_start
 		HAVING SUM(bft.verse_sequence) <> (COUNT(bft.verse_sequence)*(COUNT(bft.verse_sequence)+1))/2;`
 
