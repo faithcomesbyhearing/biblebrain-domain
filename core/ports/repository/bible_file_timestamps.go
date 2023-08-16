@@ -1,7 +1,7 @@
 package repository
 
 import (
-	domain "biblebrain-domain/core/domain/bible"
+	domain "github.com/faithcomesbyhearing/biblebrain-domain/core/domain/bible"
 )
 
 type BibleFileWithGapsRepository interface {

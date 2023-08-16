@@ -1,9 +1,10 @@
 package repository
 
 import (
-	domain "biblebrain-domain/core/domain/bible"
-	"biblebrain-domain/core/ports/repository"
 	"fmt"
+
+	domain "github.com/faithcomesbyhearing/biblebrain-domain/core/domain/bible"
+	"github.com/faithcomesbyhearing/biblebrain-domain/core/ports/repository"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
