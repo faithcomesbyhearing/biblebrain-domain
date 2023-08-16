@@ -1,4 +1,4 @@
-module biblebrain-domain
+module github.com/faithcomesbyhearing/biblebrain-domain
 
 go 1.20
 
