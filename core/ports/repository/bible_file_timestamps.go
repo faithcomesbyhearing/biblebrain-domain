@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"biblebrain-domain-go/core/domain"
+	domain "biblebrain-domain/core/domain/bible"
 )
 
 type BibleFileWithGapsRepository interface {

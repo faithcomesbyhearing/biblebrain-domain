@@ -1,7 +1,7 @@
 package connection
 
 import (
-	"biblebrain-domain-go/core/domain"
+	"biblebrain-domain/core/domain"
 
 	"fmt"
 

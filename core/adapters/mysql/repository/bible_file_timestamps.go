@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"biblebrain-domain-go/core/domain"
-	"biblebrain-domain-go/core/ports/repository"
+	domain "biblebrain-domain/core/domain/bible"
+	"biblebrain-domain/core/ports/repository"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -21,22 +21,31 @@ func NewBibleFileWithGapsRepository(db *gorm.DB) repository.BibleFileWithGapsRep
 // This method creates a temporary table called bible_files_with_timestamp_gaps which holds information about
 // Bible files with gaps in their timestamp sequences.
 func (r BibleFileWithGapsRepository) CreateTempTable() error {
-	sql := `CREATE TEMPORARY TABLE bible_files_with_timestamp_gaps SELECT bfc.bible_id,
-		bf2.id as bible_file_id,
-		bf2.book_id,
-		bf2.chapter_start,
-		bf2.file_name as bible_file_name,
-		SUM(bft.verse_sequence) AS sum_verses,
-		COUNT(bft.verse_sequence) AS count_verses,
-		(COUNT(bft.verse_sequence)*(COUNT(bft.verse_sequence)+1))/2 AS formula_sum_of_n
-		FROM bible_fileset_connections bfc 
-		JOIN bible_filesets bf ON bfc.hash_id = bf.hash_id
-		JOIN bible_files bf2 ON bf2.hash_id = bf.hash_id 
-		JOIN bible_file_timestamps bft ON bft.bible_file_id = bf2.id
-		WHERE bft.verse_sequence <> 0
-		AND bft.bible_file_id = 495933 -- test line
-		GROUP BY bfc.bible_id, bf2.id, bf2.book_id, bf2.file_name,bf2.chapter_start
-		HAVING SUM(bft.verse_sequence) <> (COUNT(bft.verse_sequence)*(COUNT(bft.verse_sequence)+1))/2;`
+	sql := `CREATE TEMPORARY TABLE bible_files_with_timestamp_gaps SELECT sub.*
+	FROM (
+			SELECT bfc.bible_id,
+				bf2.id as bible_file_id,
+				bf2.book_id,
+				bf2.chapter_start,
+				bf2.file_name as bible_file_name,
+				SUM(CASE
+					WHEN bft.verse_end IS NULL THEN bft.verse_sequence
+					WHEN bft.verse_end > 0 and bft.verse_end > bft.verse_sequence THEN (bft.verse_end*(bft.verse_end+1))/2 - (bft.verse_sequence*(bft.verse_sequence-1))/2
+					ELSE bft.verse_sequence
+				END) AS sum_verses,
+				SUM(CASE
+					WHEN bft.verse_end IS NULL THEN 1
+					WHEN bft.verse_end > 0 and bft.verse_end > bft.verse_sequence THEN (bft.verse_end - bft.verse_sequence) + 1
+					ELSE 1
+				END) AS count_verses
+			FROM bible_fileset_connections bfc
+			JOIN bible_filesets bf ON bfc.hash_id = bf.hash_id
+			JOIN bible_files bf2 ON bf2.hash_id = bf.hash_id
+			JOIN bible_file_timestamps bft ON bft.bible_file_id = bf2.id
+			WHERE bft.verse_sequence <> 0
+			GROUP BY bfc.bible_id, bf2.id, bf2.book_id, bf2.file_name, bf2.chapter_start
+		) AS sub
+	WHERE sub.sum_verses <> (sub.count_verses*(sub.count_verses+1))/2;`
 
 	return r.db.Exec(sql).Error
 }
