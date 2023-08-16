@@ -1,7 +1,7 @@
 package connection
 
 import (
-	"biblebrain-domain/core/domain"
+	"github.com/faithcomesbyhearing/biblebrain-domain/core/domain"
 
 	"fmt"
 
