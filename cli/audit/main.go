@@ -20,12 +20,16 @@ import (
 )
 
 func main() {
-	var filesetId string
+	var filesetId, bucket string
 	flag.StringVar(&filesetId, "filesetId", "", "filesetId to be pruned")
+	flag.StringVar(&bucket, "bucket", "", "bucket name (eg dbp-prod)")
 	flag.Parse()
 	if len(filesetId) == 0 {
 		fmt.Println("provide filesetid as command line arg")
 		return
+	}
+	if len(bucket) == 0 {
+		bucket = "dbp-staging"
 	}
 
 	extensions := []string{"mp3", "webm"}
@@ -72,7 +76,6 @@ func main() {
 
 	// prepare to navigate through S3
 	// FIXME: change to a read-only S3 profile
-	bucket := "dbp-prod"
 	profile := "dbs"
 
 	cfg, _ := config.LoadDefaultConfig(context.TODO(),
@@ -137,7 +140,7 @@ func main() {
 	fmt.Printf("orphans.. len=%d\n", len(orphans))
 
 	// write to fs
-	file, err := os.Create(filesetId + ".json")
+	file, err := os.Create("results/" + filesetId + ".json")
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		return

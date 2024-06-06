@@ -17,17 +17,23 @@ import (
 )
 
 func main() {
-	var filesetId string
+	var filesetId, bucket string
 	flag.StringVar(&filesetId, "filesetId", "", "filesetId to be pruned")
+	flag.StringVar(&bucket, "bucket", "", "bucket name (eg dbp-prod)")
 	flag.Parse()
 	if len(filesetId) == 0 {
 		fmt.Println("provide filesetid as command line arg")
 		return
 	}
+	if len(bucket) == 0 {
+		bucket = "dbp-staging"
+	}
 
 	// read the specified file
 	// read from fs
-	in, err := os.Open("in/NYJBIBO1DA.json")
+	inFileName := "delete/" + filesetId + ".json"
+
+	in, err := os.Open(inFileName)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -41,12 +47,9 @@ func main() {
 		return
 	}
 
-	fmt.Println("Slice read from JSON file:", toDelete)
+	// fmt.Println("Slice read from JSON file:", toDelete)
 
-	// prepare to navigate through S3
-	// FIXME: change to a read-only S3 profile
-	bucket := "dbp-staging"
-	profile := "dbsxx"
+	profile := "dbs"
 
 	cfg, _ := config.LoadDefaultConfig(context.TODO(),
 		config.WithSharedConfigProfile(profile),
@@ -69,5 +72,11 @@ func main() {
 		log.Printf("Couldn't delete objects from bucket %v. Here's why: %v\n", bucket, err)
 	} else {
 		log.Printf("Deleted %v objects.\n", len(output.Deleted))
+		outFileName := "processed/" + filesetId + ".json"
+
+		err = os.Rename(inFileName, outFileName)
+		if err != nil {
+			log.Printf("Unable to move file %v to %v\n", inFileName, outFileName)
+		}
 	}
 }
