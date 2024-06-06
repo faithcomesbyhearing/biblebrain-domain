@@ -18,7 +18,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func audit(bucket, filesetId string) {
+func Audit(bucket, filesetId string) {
 	extensions := []string{"mp3", "webm"}
 
 	// establish database connection

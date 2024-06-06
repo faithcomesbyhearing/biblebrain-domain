@@ -1,13 +1,14 @@
-package floss
+package main
 
 import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/faithcomesbyhearing/biblebrain-domain/cmd/floss"
 )
 
 func main() {
-	fmt.Println("abcdefg")
 	auditCmd := flag.NewFlagSet("audit", flag.ExitOnError)
 	auditBucket := auditCmd.String("bucket", "", "bucket name (eg dbp-prod)")
 	auditFilesetId := auditCmd.String("filesetId", "", "filesetId to be audited")
@@ -36,6 +37,8 @@ func main() {
 			fmt.Println("provide filesetid as command line arg")
 			return
 		}
+		floss.Audit(*auditBucket, *auditFilesetId)
+		///floss.Audit("dbp-staging", "NYJBIBO1DA")
 	case "remove":
 		removeCmd.Parse(os.Args[2:])
 		fmt.Println("subcommand 'remove'")
@@ -49,6 +52,7 @@ func main() {
 			fmt.Println("provide filesetid as command line arg")
 			return
 		}
+		floss.Remove(*removeBucket, *removeFilesetId)
 	default:
 		fmt.Println("expected 'audit' or 'remove' subcommands")
 		os.Exit(1)

@@ -3,7 +3,6 @@ package floss
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -16,22 +15,10 @@ import (
 	"github.com/faithcomesbyhearing/biblebrain-domain/core/domain/storage"
 )
 
-func remove() {
-	var filesetId, bucket string
-	flag.StringVar(&filesetId, "filesetId", "", "filesetId to be pruned")
-	flag.StringVar(&bucket, "bucket", "", "bucket name (eg dbp-prod)")
-	flag.Parse()
-	if len(filesetId) == 0 {
-		fmt.Println("provide filesetid as command line arg")
-		return
-	}
-	if len(bucket) == 0 {
-		bucket = "dbp-staging"
-	}
-
+func Remove(bucket, filesetId string) {
 	// read the specified file
 	// read from fs
-	inFileName := "delete/" + filesetId + ".json"
+	inFileName := "toRemove/" + filesetId + ".json"
 
 	in, err := os.Open(inFileName)
 	if err != nil {
@@ -46,8 +33,6 @@ func remove() {
 		fmt.Println("Error decoding JSON data:", err)
 		return
 	}
-
-	// fmt.Println("Slice read from JSON file:", toDelete)
 
 	profile := "dbs"
 
@@ -72,7 +57,7 @@ func remove() {
 		log.Printf("Couldn't delete objects from bucket %v. Here's why: %v\n", bucket, err)
 	} else {
 		log.Printf("Deleted %v objects.\n", len(output.Deleted))
-		outFileName := "processed/" + filesetId + ".json"
+		outFileName := "removed/" + filesetId + ".json"
 
 		err = os.Rename(inFileName, outFileName)
 		if err != nil {
