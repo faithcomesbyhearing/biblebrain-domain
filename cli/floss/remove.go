@@ -1,4 +1,4 @@
-package main
+package floss
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/faithcomesbyhearing/biblebrain-domain/core/domain/storage"
 )
 
-func main() {
+func remove() {
 	var filesetId, bucket string
 	flag.StringVar(&filesetId, "filesetId", "", "filesetId to be pruned")
 	flag.StringVar(&bucket, "bucket", "", "bucket name (eg dbp-prod)")

@@ -13,7 +13,5 @@
 
 .env
 
-cli/audit/results/*.json
-cli/prune/delete/*.json
-cli/prune/processed/*.json
+cli/floss/**/*.json
 

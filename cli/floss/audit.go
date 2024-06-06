@@ -1,10 +1,9 @@
-package main
+package floss
 
 import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"os"
 	"slices"
@@ -19,19 +18,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func main() {
-	var filesetId, bucket string
-	flag.StringVar(&filesetId, "filesetId", "", "filesetId to be pruned")
-	flag.StringVar(&bucket, "bucket", "", "bucket name (eg dbp-prod)")
-	flag.Parse()
-	if len(filesetId) == 0 {
-		fmt.Println("provide filesetid as command line arg")
-		return
-	}
-	if len(bucket) == 0 {
-		bucket = "dbp-staging"
-	}
-
+func audit(bucket, filesetId string) {
 	extensions := []string{"mp3", "webm"}
 
 	// establish database connection
