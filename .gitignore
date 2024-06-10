@@ -13,5 +13,5 @@
 
 .env
 
-cli/floss/**/*.json
+cli/lint/**/*.json
 

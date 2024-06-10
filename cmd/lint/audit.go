@@ -1,4 +1,4 @@
-package floss
+package lint
 
 import (
 	"context"

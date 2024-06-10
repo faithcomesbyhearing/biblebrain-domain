@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/faithcomesbyhearing/biblebrain-domain/cmd/floss"
+	"github.com/faithcomesbyhearing/biblebrain-domain/cmd/lint"
 )
 
 func main() {
@@ -37,8 +37,8 @@ func main() {
 			fmt.Println("provide filesetid as command line arg")
 			return
 		}
-		floss.Audit(*auditBucket, *auditFilesetId)
-		///floss.Audit("dbp-staging", "NYJBIBO1DA")
+		lint.Audit(*auditBucket, *auditFilesetId)
+		///lint.Audit("dbp-staging", "NYJBIBO1DA")
 	case "remove":
 		removeCmd.Parse(os.Args[2:])
 		fmt.Println("subcommand 'remove'")
@@ -52,7 +52,7 @@ func main() {
 			fmt.Println("provide filesetid as command line arg")
 			return
 		}
-		floss.Remove(*removeBucket, *removeFilesetId)
+		lint.Remove(*removeBucket, *removeFilesetId)
 	default:
 		fmt.Println("expected 'audit' or 'remove' subcommands")
 		os.Exit(1)
