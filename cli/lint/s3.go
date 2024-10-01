@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/faithcomesbyhearing/biblebrain-domain/cmd/lint"
+	lints3 "github.com/faithcomesbyhearing/biblebrain-domain/cmd/lint/s3"
 )
 
 func main() {
@@ -18,14 +18,17 @@ func main() {
 	removeFilesetId := removeCmd.String("filesetId", "", "filesetId to be audited")
 
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'audit' or 'enable' subcommands")
+		fmt.Println("expected 'audit' or 'remove' subcommands")
 		os.Exit(1)
 	}
 
 	switch os.Args[1] {
 
 	case "audit":
-		auditCmd.Parse(os.Args[2:])
+		if error := auditCmd.Parse(os.Args[2:]); error != nil {
+			fmt.Println("failure parsing audit parameters")
+			os.Exit(-1)
+		}
 		fmt.Println("subcommand 'audit'")
 		fmt.Println("  bucket:", *auditBucket)
 		fmt.Println("  filesetId:", *auditFilesetId)
@@ -37,10 +40,13 @@ func main() {
 			fmt.Println("provide filesetid as command line arg")
 			return
 		}
-		lint.Audit(*auditBucket, *auditFilesetId)
+		lints3.Audit(*auditBucket, *auditFilesetId)
 		///lint.Audit("dbp-staging", "NYJBIBO1DA")
 	case "remove":
-		removeCmd.Parse(os.Args[2:])
+		if error := removeCmd.Parse(os.Args[2:]); error != nil {
+			fmt.Println("failure parsing remove parameters")
+			os.Exit(-1)
+		}
 		fmt.Println("subcommand 'remove'")
 		fmt.Println("  bucket:", *removeBucket)
 		fmt.Println("  filesetId:", *removeFilesetId)
@@ -52,9 +58,9 @@ func main() {
 			fmt.Println("provide filesetid as command line arg")
 			return
 		}
-		lint.Remove(*removeBucket, *removeFilesetId)
+		lints3.Remove(*removeBucket, *removeFilesetId)
 	default:
 		fmt.Println("expected 'audit' or 'remove' subcommands")
-		os.Exit(1)
+		os.Exit(-1)
 	}
 }

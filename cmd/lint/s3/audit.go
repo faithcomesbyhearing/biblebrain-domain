@@ -127,7 +127,7 @@ func Audit(bucket, filesetId string) {
 	fmt.Printf("orphans.. len=%d\n", len(orphans))
 
 	// write to fs
-	file, err := os.Create("results/" + filesetId + ".json")
+	file, err := os.Create("audited/" + filesetId + ".json")
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		return

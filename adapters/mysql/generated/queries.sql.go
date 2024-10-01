@@ -7,6 +7,8 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
+	"time"
 )
 
 const getFilesForBible = `-- name: GetFilesForBible :many
@@ -113,4 +115,98 @@ func (q *Queries) GetStoragePrefixForFileset(ctx context.Context, id string) (st
 	var concat string
 	err := row.Scan(&concat)
 	return concat, err
+}
+
+const hlsStitchingDrillDown = `-- name: HlsStitchingDrillDown :many
+select b.id as bible, bfs.id as fileset, bf.id as bible_file_id, bfsb.id as stream_bandwidth_id, bfsb.resolution_height, bfsb.file_name, bfst.id as stream_ts_id, bfsb.updated_at
+from bibles b
+join bible_fileset_connections bfc on bfc.bible_id = b.id
+join bible_filesets bfs on bfs.hash_id = bfc.hash_id
+join bible_files bf on bf.hash_id = bfs.hash_id
+join bible_file_stream_bandwidths bfsb on bfsb.bible_file_id = bf.id
+left join bible_file_stream_ts bfst on bfst.stream_bandwidth_id = bfsb.id
+where b.id = ?
+and bfst.id is null
+and set_type_code like 'video%'
+order by bfsb.resolution_height, bf.book_id, bf.chapter_start, bf.verse_start
+`
+
+type HlsStitchingDrillDownRow struct {
+	Bible             string        `json:"bible"`
+	Fileset           string        `json:"fileset"`
+	BibleFileID       uint32        `json:"bible_file_id"`
+	StreamBandwidthID uint32        `json:"stream_bandwidth_id"`
+	ResolutionHeight  sql.NullInt32 `json:"resolution_height"`
+	FileName          string        `json:"file_name"`
+	StreamTsID        sql.NullInt32 `json:"stream_ts_id"`
+	UpdatedAt         time.Time     `json:"updated_at"`
+}
+
+func (q *Queries) HlsStitchingDrillDown(ctx context.Context, id string) ([]HlsStitchingDrillDownRow, error) {
+	rows, err := q.db.QueryContext(ctx, hlsStitchingDrillDown, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []HlsStitchingDrillDownRow
+	for rows.Next() {
+		var i HlsStitchingDrillDownRow
+		if err := rows.Scan(
+			&i.Bible,
+			&i.Fileset,
+			&i.BibleFileID,
+			&i.StreamBandwidthID,
+			&i.ResolutionHeight,
+			&i.FileName,
+			&i.StreamTsID,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const hlsStitchingSearch = `-- name: HlsStitchingSearch :many
+select distinct b.id as bible
+from bibles b
+join bible_fileset_connections bfc on bfc.bible_id = b.id
+join bible_filesets bfs on bfs.hash_id = bfc.hash_id
+join bible_files bf on bf.hash_id = bfs.hash_id
+left join bible_file_stream_bandwidths bfsb on bfsb.bible_file_id = bf.id
+left join bible_file_stream_ts bfst on bfst.stream_bandwidth_id = bfsb.id
+where bfs.archived is false
+and set_type_code like 'video%'
+and bfst.id is null 
+order by b.id
+`
+
+func (q *Queries) HlsStitchingSearch(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, hlsStitchingSearch)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var bible string
+		if err := rows.Scan(&bible); err != nil {
+			return nil, err
+		}
+		items = append(items, bible)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

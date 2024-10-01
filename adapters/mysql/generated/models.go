@@ -42,6 +42,28 @@ type BibleFile struct {
 	VerseSequence sql.NullInt16  `json:"verse_sequence"`
 }
 
+type BibleFileStreamBandwidth struct {
+	ID               uint32        `json:"id"`
+	BibleFileID      uint32        `json:"bible_file_id"`
+	FileName         string        `json:"file_name"`
+	Bandwidth        uint32        `json:"bandwidth"`
+	ResolutionWidth  sql.NullInt32 `json:"resolution_width"`
+	ResolutionHeight sql.NullInt32 `json:"resolution_height"`
+	Codec            string        `json:"codec"`
+	Stream           bool          `json:"stream"`
+	CreatedAt        time.Time     `json:"created_at"`
+	UpdatedAt        time.Time     `json:"updated_at"`
+}
+
+type BibleFileStreamT struct {
+	ID                uint32    `json:"id"`
+	StreamBandwidthID uint32    `json:"stream_bandwidth_id"`
+	FileName          string    `json:"file_name"`
+	Runtime           float64   `json:"runtime"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
 type BibleFileset struct {
 	ID            string       `json:"id"`
 	HashID        string       `json:"hash_id"`

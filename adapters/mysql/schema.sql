@@ -202,3 +202,32 @@ CREATE TABLE `bible_fileset_types` (
   KEY `bible_fileset_types_mode_index` (`mode_id`),
   CONSTRAINT `FK_bible_fileset_modes_bible_fileset_types` FOREIGN KEY (`mode_id`) REFERENCES `bible_fileset_modes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `bible_file_stream_bandwidths` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `bible_file_id` int unsigned NOT NULL,
+  `file_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `bandwidth` int unsigned NOT NULL,
+  `resolution_width` int unsigned DEFAULT NULL,
+  `resolution_height` int unsigned DEFAULT NULL,
+  `codec` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `stream` tinyint(1) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `bible_file_video_resolutions_bible_file_id_foreign` (`bible_file_id`),
+  CONSTRAINT `FK_bible_files_bible_file_stream_bandwidths` FOREIGN KEY (`bible_file_id`) REFERENCES `bible_files` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `bible_file_stream_ts` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `stream_bandwidth_id` int unsigned NOT NULL,
+  `file_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `runtime` double(8,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `file_name` (`file_name`),
+  KEY `bible_file_video_transport_stream_video_resolution_id_foreign` (`stream_bandwidth_id`),
+  CONSTRAINT `FK_stream_bandwidths_stream_ts` FOREIGN KEY (`stream_bandwidth_id`) REFERENCES `bible_file_stream_bandwidths` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
