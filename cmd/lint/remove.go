@@ -2,6 +2,7 @@ package lint
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -15,14 +16,14 @@ import (
 	"github.com/faithcomesbyhearing/biblebrain-domain/core/domain/storage"
 )
 
-func Remove(bucket, filesetId string) {
+func RemoveFromS3(bucket, filesetId string) {
 	// read the specified file
 	// read from fs
-	inFileName := "toRemove/" + filesetId + ".json"
+	inFileName := "toRemove/" + filesetId + "-s3.json"
 
 	in, err := os.Open(inFileName)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
+		fmt.Println("No S3 file for fileset " + filesetId)
 		return
 	}
 	defer in.Close()
@@ -64,4 +65,52 @@ func Remove(bucket, filesetId string) {
 			log.Printf("Unable to move file %v to %v\n", inFileName, outFileName)
 		}
 	}
+}
+
+func RemoveFromDb(filesetId string) {
+	// read the specified file
+	// read from fs
+	inFileName := "toRemove/" + filesetId + "-db.json"
+
+	in, err := os.Open(inFileName)
+	if err != nil {
+		fmt.Println("No DB file for fileset " + filesetId)
+		return
+	}
+	defer in.Close()
+
+	var toDelete []storage.Prefix
+	decoder := json.NewDecoder(in)
+	if err := decoder.Decode(&toDelete); err != nil {
+		fmt.Println("Error decoding JSON data:", err)
+		return
+	}
+
+	// delete from bible_files where filename = x
+	// establish database connection
+	// FIXME: change to a read-only database user
+	db, err := sql.Open("mysql", "etl:E87xjHLeXzxtkKr@tcp(127.0.0.1:3306)/dbp_NEWDATA")
+	// db, err := sql.Open("mysql", "etl_dev:password@tcp(127.0.0.1:3306)/dbp_TEST")
+	if err != nil {
+		fmt.Println("sql open failed")
+		panic(err)
+	}
+	defer db.Close()
+	err = db.Ping()
+	if err != nil {
+		fmt.Println("sql ping failed")
+		panic(err)
+	}
+
+	// queries := sqlc.New(db)
+	// ctx := context.Background()
+
+	// for _, prefix := range toDelete {
+	// 	// execute delete
+	// }
+
+	// rows, err := queries.DeleteFilesetFiles(ctx, filesetId)
+	// if err != nil {
+	// 	panic(err)
+	// }
 }

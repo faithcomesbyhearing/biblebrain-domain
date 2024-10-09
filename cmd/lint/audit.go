@@ -113,7 +113,7 @@ func Audit(bucket, filesetId string) {
 	// fmt.Printf("media...  %v, len=%d cap=%d\n", media, len(media), cap(media))
 	fmt.Printf("media.. len=%d\n", len(media))
 
-	// now find media that is not represented in metadata
+	// find orphans -- media that is not represented in metadata
 	orphans := []storage.Prefix{}
 	for _, m := range media {
 		found := slices.ContainsFunc(metadata, func(p storage.Prefix) bool {
@@ -123,19 +123,43 @@ func Audit(bucket, filesetId string) {
 			orphans = append(orphans, m)
 		}
 	}
-
-	fmt.Printf("orphans.. len=%d\n", len(orphans))
+	fmt.Printf("orphans (s3).. len=%d\n", len(orphans))
 
 	// write to fs
-	file, err := os.Create("audited/" + filesetId + ".json")
+	orphanFile, err := os.Create("audited/" + filesetId + "-s3.json")
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		return
 	}
-	defer file.Close()
+	defer orphanFile.Close()
 
-	encoder := json.NewEncoder(file)
-	if err := encoder.Encode(orphans); err != nil {
+	enc := json.NewEncoder(orphanFile)
+	if err := enc.Encode(orphans); err != nil {
+		fmt.Println("Error encoding data to JSON:", err)
+	}
+
+	// find broken references -- metadata that points to media that is not there
+	brokenReferences := []storage.Prefix{}
+	for _, m := range metadata {
+		found := slices.ContainsFunc(media, func(p storage.Prefix) bool {
+			return storage.Compare(p, m) == 0
+		})
+		if !found {
+			brokenReferences = append(brokenReferences, m)
+		}
+	}
+	fmt.Printf("broken references (db).. len=%d\n", len(brokenReferences))
+	// write to fs
+	brokenReferencesFile, err := os.Create("audited/" + filesetId + "-db.json")
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer brokenReferencesFile.Close()
+
+	// TODO: write broken references to file
+	enc2 := json.NewEncoder(brokenReferencesFile)
+	if err := enc2.Encode(brokenReferences); err != nil {
 		fmt.Println("Error encoding data to JSON:", err)
 	}
 }

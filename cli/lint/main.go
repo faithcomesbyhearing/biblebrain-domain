@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	lints3 "github.com/faithcomesbyhearing/biblebrain-domain/cmd/lint/s3"
+	"github.com/faithcomesbyhearing/biblebrain-domain/cmd/lint"
 )
 
 func main() {
@@ -40,7 +40,7 @@ func main() {
 			fmt.Println("provide filesetid as command line arg")
 			return
 		}
-		lints3.Audit(*auditBucket, *auditFilesetId)
+		lint.Audit(*auditBucket, *auditFilesetId)
 		///lint.Audit("dbp-staging", "NYJBIBO1DA")
 	case "remove":
 		if error := removeCmd.Parse(os.Args[2:]); error != nil {
@@ -58,7 +58,9 @@ func main() {
 			fmt.Println("provide filesetid as command line arg")
 			return
 		}
-		lints3.Remove(*removeBucket, *removeFilesetId)
+		// note: control files must be manually reviewed and approved (by moving them into a separate directory) in order for data to be removed
+		lint.RemoveFromS3(*removeBucket, *removeFilesetId)
+		lint.RemoveFromDb(*removeFilesetId)
 	default:
 		fmt.Println("expected 'audit' or 'remove' subcommands")
 		os.Exit(-1)
